@@ -153,7 +153,11 @@ for i, line in enumerate(file):
                             
                 if charac == "M":
                     #print(line[j:-2])
-                    metal[net][metal_name]["merge"] = line[j:-2]
+                    if line.find(";") != -1:
+                        metal[net][metal_name]["merge"] = line[j:-3]
+                    else:
+                        metal[net][metal_name]["merge"] = line[j:-2]
+                        
                     break
             
             
@@ -200,7 +204,7 @@ for i, line in enumerate(file):
                             
                 if charac == "M":
                     #print(line[j:-2])
-                    if line.find(";"):
+                    if line.find(";") != -1:
                         metal[net][metal_name]["merge"] = line[j:-3]
                     else:
                         metal[net][metal_name]["merge"] = line[j:-2]
