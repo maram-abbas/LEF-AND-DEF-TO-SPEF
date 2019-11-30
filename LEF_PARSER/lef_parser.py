@@ -67,11 +67,15 @@ class LefParser:
                     # list
                     if len(self.stack) != 0:
                         # add the done statement to a dictionary
+                        
                         done_obj = self.stack.pop()
+                        #print(done_obj)
                         if isinstance(done_obj, Macro):
                             self.macro_dict[done_obj.name] = done_obj
                         elif isinstance(done_obj, Layer):
                             self.layer_dict[done_obj.name] = done_obj
+                            #print(self.layer_dict[done_obj.name])
+                            
                         elif isinstance(done_obj, Via):
                             self.via_dict[done_obj.name] = done_obj
                         self.statements.append(done_obj)
@@ -95,10 +99,15 @@ if __name__ == '__main__':
     #GETTING RESISTANCE OF METALS AND VIA LAYERS    
     layer_metal = []
     metal_resistance = []
+    metal_capacitance = []
+    metal_edgecapacitance = []
+    
     for i in range(1,7):
         layer_metal.append(lef_parser.layer_dict["metal" + str(i)])
         metal_resistance.append(layer_metal[i - 1].resistance[1])
-        #print(metal_resistance[i - 1])
+        metal_capacitance.append(layer_metal[i - 1].capacitance[1])
+        #metal_edgecapacitance.append(layer_metal[i - 1].edgecapacitance[1])
+        #print(lef_parser.layer_dict["metal" + str(i)])
         
     layer_via = []
     via_resistance = []
@@ -108,6 +117,25 @@ if __name__ == '__main__':
     for i in range(2,6):
         layer_via.append(lef_parser.layer_dict["via" + str(i)])
         via_resistance.append(layer_via[i - 1].resistance)
+        
+    lef = open(path,"r")
+    start = 100000000
+    end = 0
+    edge_capacitance = 0
+    for i in range (1,7):
+        for c,line in enumerate(lef):
+            if line.startswith("LAYER metal" + str(i)):
+                start = c
+                
+            if line.startswith("  EDGECAPACITANCE") and c > start:
+                temp = "  EDGECAPACITANCE "
+                edge_capacitance = line[len(temp):-2]
+                metal_edgecapacitance.append(edge_capacitance)
+                #print(edge_capacitance)
+                break
+                
+    print(metal_edgecapacitance)
+                
         
     #print(via_resistance)
         
