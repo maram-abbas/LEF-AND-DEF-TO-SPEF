@@ -5,7 +5,7 @@ Created on Wed Nov 27 08:58:30 2019
 @author: user
 """
 
-lib_file = open("osu018_stdcells.lib", "r") #opening the file
+lib_file = open("osu035.lib", "r") #opening the file
 
 
 cell_name=[] #list of cell name
