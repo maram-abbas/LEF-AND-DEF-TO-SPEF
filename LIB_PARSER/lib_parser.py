@@ -69,6 +69,13 @@ index_of_parsed_cell=cell_name.index(parsed_cell)   # get the index of the cell
 number_occupied=output.count(index_of_parsed_cell)   #index dah mawgoud kam mara ba2 fel output list  ex 3 times
 first_occurance=output.index(index_of_parsed_cell)  #index of first occuance of that index 
 current_cap=0
+while(number_occupied>0):
+    #total_cap+=float(capacitance[first_occurance])
+    if(pin_name[first_occurance]=="A"):
+        
+        current_cap=capacitance[first_occurance]
+    first_occurance+=1
+    number_occupied-=1
 
 print(capacitance)            
 print(counter_2)        
