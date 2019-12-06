@@ -7,7 +7,6 @@ Created on Wed Nov 27 08:58:30 2019
 
 lib_file = open("osu035.lib", "r") #opening the file
 
-parsed_cell="AND2X2"  # to be received from the def parser
 
 cell_name=[] #list of cell name
 pin_name=[] #list of the pin names
@@ -65,7 +64,8 @@ for i, line in enumerate(lib_file): #passing at everyline of file
             twos_find=line.find(';') #find ;
             capacitance.append(line[ones_find+2:twos_find]) #placing capacitaice in the list
             
-#calculating capacitance            
+#calculating capacitance  
+parsed_cell="AND2X2"  # to be received from the def parser just testing
 index_of_parsed_cell=cell_name.index(parsed_cell)   # get the index of the cell   
 number_occupied=output.count(index_of_parsed_cell)   #index dah mawgoud kam mara ba2 fel output list  ex 3 times
 first_occurance=output.index(index_of_parsed_cell)  #index of first occuance of that index 
