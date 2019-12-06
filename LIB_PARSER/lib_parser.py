@@ -78,6 +78,8 @@ while(number_occupied>0):
     first_occurance+=1
     number_occupied-=1
 
+print("current_cap",current_cap)
+print("total_cap",total_cap)            
 print(capacitance)            
 print(counter_2)        
 print('output',output)
