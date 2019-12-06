@@ -63,7 +63,8 @@ for i, line in enumerate(lib_file): #passing at everyline of file
             ones_find=line.find(':') #find :
             twos_find=line.find(';') #find ;
             capacitance.append(line[ones_find+2:twos_find]) #placing capacitaice in the list
-   
+            
+#calculating capacitance            
 index_of_parsed_cell=cell_name.index(parsed_cell)   # get the index of the cell   
 number_occupied=output.count(index_of_parsed_cell)   #index dah mawgoud kam mara ba2 fel output list  ex 3 times
 first_occurance=output.index(index_of_parsed_cell)  #index of first occuance of that index 
