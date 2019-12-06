@@ -9,15 +9,15 @@ lib_file = open("osu035.lib", "r") #opening the file
 
 
 cell_name=[] #list of cell name
-pin_name=[] #list the pin names
-direction=[] #list the direction
+pin_name=[] #list of the pin names
+direction=[] #list of the direction
 pin_taken=0 # flag to see if line contain related or not then take pins only
 counter=-1 # number of pins
-counter2=0
-output=[]  #correct index
+counter2=0 
+output=[]  #correct index to make all of them parrallel with the cell name
 counter_2=[]
 total=[]
-capacitance=[]
+capacitance=[] list #list of the capacitances of each pin 
 cap_flag=0#flag for capacitance
 
 for i, line in enumerate(lib_file): #passing at everyline of file
@@ -35,34 +35,34 @@ for i, line in enumerate(lib_file): #passing at everyline of file
         else:
             pin_taken=1 #related is not in the line
         
-        if(pin_taken==1) and line.find('pin') !=-1:
+        if(pin_taken==1) and line.find('pin') !=-1:  #if found the word pin
             
             open_bracket=line.find('(')    # finding (
             end_bracket=line.find(')')   #finding the ) 
-            my_pin_name=line[open_bracket+1:end_bracket]
-            pin_name.append(my_pin_name)    #taking pin name
+            my_pin_name=line[open_bracket+1:end_bracket] #taking pin name
+            pin_name.append(my_pin_name)    #placing pin name inside the pin_name list
             output.append(counter)
             counter2+=1
             counter_2.append(counter2)
             
                 
-        if line.find('direction')  !=-1:
+        if line.find('direction')  !=-1:  #if found direction
             one_find=line.find(':') #find :
             two_find=line.find(';') #find ;
             my_direction=line[one_find+2:two_find] #direction either input or output
             if (my_direction =="input"):
-                updated_direction='I' #conerting it to I
+                updated_direction='I' #converting it to I
             else:# output
-                updated_direction='O' #conerting it to O
+                updated_direction='O' #converting it to O
             direction.append(updated_direction) #taking direction
-        if line.find('_capacitance')  !=-1: 
+        if line.find('_capacitance')  !=-1:  #if found direction
             cap_flag=1 #flag to take capacitance only and ignore rise_capacitance and fall_cap..
         else:
             cap_flag=0
         if(cap_flag==0) and line.find('capacitance :') !=-1:
             ones_find=line.find(':') #find :
             twos_find=line.find(';') #find ;
-            capacitance.append(line[ones_find+2:twos_find])
+            capacitance.append(line[ones_find+2:twos_find]) #placing capacitaice in the list
    
             
 print(capacitance)            
