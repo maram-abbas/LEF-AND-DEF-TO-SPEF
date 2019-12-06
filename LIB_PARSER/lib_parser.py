@@ -7,6 +7,7 @@ Created on Wed Nov 27 08:58:30 2019
 
 lib_file = open("osu035.lib", "r") #opening the file
 
+parsed_cell="AND2X2"  # to be received from the def parser
 
 cell_name=[] #list of cell name
 pin_name=[] #list of the pin names
