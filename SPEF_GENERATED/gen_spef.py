@@ -114,7 +114,7 @@ class DefParser:
         stop = 0
         
         #GETTING PINS
-        file = open("cpu.def", "r")
+        file = open("spi_master.def", "r")
         for i, line in enumerate(file):
             if line.find("PINS") != -1:
                 start = i
@@ -152,7 +152,7 @@ class DefParser:
         self.components_cell = []
         comp_n = ""
         comp_c = ""
-        file = open("cpu.def", "r")
+        file = open("spi_master.def", "r")
         for i, line in enumerate(file):
             if line.find("COMPONENTS") != -1:
                 start = i
@@ -180,7 +180,7 @@ class DefParser:
         counter = 0
         #metal = {}
         #nets = []
-        file = open("cpu.def", "r")
+        file = open("spi_master.def", "r")
         for i, line in enumerate(file):
             if line.find("NETS") != -1:
                 start = i
@@ -330,7 +330,7 @@ class DefParser:
 class LibParser:
     
     def parse (self):
-        lib_file = open("osu035.lib", "r") #opening the file
+        lib_file = open("osu018_stdcells.lib", "r") #opening the file
     
         self.cell_name=[] #list of cell name
         self.pin_name=[] #list the pin names
@@ -393,7 +393,7 @@ class LibParser:
 if __name__ == '__main__':
     #LEF EXTRACTIONS
     #path = "osu018_stdcells.lef"
-    path = "NangateOpenCellLibrary.lef"
+    path = "osu018_stdcells.lef"
     lef_parser = LefParser(path)
     lef_parser.parse()
     
@@ -412,7 +412,7 @@ if __name__ == '__main__':
         
     layer_via = []
     via_resistance = []
-    layer_via.append(lef_parser.layer_dict["via1"])
+    layer_via.append(lef_parser.layer_dict["via"])
     via_resistance.append(layer_via[0].resistance)
     
     for i in range(2,6):
@@ -436,13 +436,50 @@ if __name__ == '__main__':
                 break
                 
     #print(metal_edgecapacitance)
+    via = []
+    
+    via2_1 = lef_parser.via_dict["M2_M1"]
+    
+    for e, each in enumerate(via2_1.layers):
+        if e == 1:
+            v_temp = each.name
+            via.append(v_temp)
+            
+    via3_2 = lef_parser.via_dict["M3_M2"]
+    
+    for e, each in enumerate(via3_2.layers):
+        if e == 1:
+            v_temp = each.name
+            via.append(v_temp)
+            
+    via4_3 = lef_parser.via_dict["M4_M3"]
+       
+    for e, each in enumerate(via4_3.layers):
+        if e == 1:
+            v_temp = each.name
+            via.append(v_temp)
+    
+    via5_4 = lef_parser.via_dict["M5_M4"]
+       
+    for e, each in enumerate(via5_4.layers):
+        if e == 1:
+            v_temp = each.name
+            via.append(v_temp)
+            
+    via6_5 = lef_parser.via_dict["M6_M5"]
+       
+    for e, each in enumerate(via6_5.layers):
+        if e == 1:
+            v_temp = each.name
+            via.append(v_temp)
+            
+    #print(v_temp)
+        
     
     
     
     
-    
-    
-    path = "NangateOpenCellLibrary.lef"
+    path = "osu018_stdcells.lef"
     lef_parser = LefParser(path)
     lef_parser.parse()  
     
@@ -454,7 +491,7 @@ if __name__ == '__main__':
     
     #print(def_parser.pin_name)
     
-    spef = open("cpu.spef", "w+")
+    spef = open("spi_master.spef", "w+")
     
     
     spef.write("*SPEF \"IEEE 1481-2009\" \n")
@@ -503,7 +540,7 @@ if __name__ == '__main__':
         pc = val + " " + str(cap_here)
         pin_cap.append(pc)
         
-    print(pin_cap)
+    #print(pin_cap)
         
     width = 0.3 
     for j in def_parser.metal:
@@ -545,6 +582,7 @@ if __name__ == '__main__':
         net_name = "*"+str(index+len(def_parser.components_name)+1)
         #print(j)
         #print(def_parser.nets[int(j)])
+        #print(def_parser.components_name)
         
         #GETTING TOTAL CAPACITANCE OF CELL INSTANCE
         for k4,k5 in enumerate(def_parser.net_cell_instance[j]["cell_name"]):
@@ -626,8 +664,115 @@ if __name__ == '__main__':
         for k2, k3 in enumerate(net_cap):
             spef.write(str(k2+counter2+1) + " "+ net_name + ":" + str(k2+counter2+1) +" " + str(k3)+"\n")
             
+               
             
+        """
+        ------------------------------------------ RESISTANCE PART -------------------------------------------
+        """
+        
+        spef.write("\n*RES\n")
+        count_res = 0
+        
+        metal_width = []
+        #wire_length = []
+        m_l = 0
+        
+        for i in range(1,7):
+            metal_width.append(lef_parser.layer_dict["metal" + str(i)].width)
+            
+         
+        for each_index in def_parser.metal[j]:
+            #print(def_parser.metal[j])
+            
+            if def_parser.metal[j][each_index]["metal"] == "metal1":
+                m_l = 0
+            elif def_parser.metal[j][each_index]["metal"] == "metal2":
+                m_l = 1
+            elif def_parser.metal[j][each_index]["metal"] == "metal3":
+                m_l = 2
+            elif def_parser.metal[j][each_index]["metal"] == "metal4":
+                m_l = 3
+            elif def_parser.metal[j][each_index]["metal"] == "metal5":
+                m_l = 4
+            elif def_parser.metal[j][each_index]["metal"] == "metal6":
+                m_l = 5
+                
+                
+            x1 = float(def_parser.metal[j][each_index]["x1"])
+            y1 = float(def_parser.metal[j][each_index]["y1"])
+            
+            if len(def_parser.metal[j][each_index]["other_x"]) != 0:
+                ox_0 = float(def_parser.metal[j][each_index]["other_x"][0])
+                oy_0 = float(def_parser.metal[j][each_index]["other_y"][0])
+                
+                wire_length = math.sqrt((x1 - ox_0)**2 + (y1 - oy_0)**2)
+                metal_r = metal_resistance[m_l]
+                metal_w = metal_width[m_l]
+                
+                resistance = metal_r * wire_length / metal_w
+                
+                count_res += 1
+                
+                spef.write(str(count_res) + " " + net_name + ":" + str(count_res) + " " + net_name + ":" + str(count_res + 1) + " " + str(resistance) + "\n")
+                #print(wire_length)
+                #if j == "load":
+                    #print(resistance)
+                
+                for en_ox, ox in enumerate(def_parser.metal[j][each_index]["other_x"]):
+                    if en_ox + 1 < len(def_parser.metal[j][each_index]["other_x"]) :
+                        #print(en_ox)
+                        #print(len(def_parser.metal[j][each_index]["other_x"]))
+                        oy = float(def_parser.metal[j][each_index]["other_y"][en_ox])
+                        ox_1 = float(def_parser.metal[j][each_index]["other_x"][en_ox + 1])
+                        oy_1 = float(def_parser.metal[j][each_index]["other_y"][en_ox + 1])
+                        ox = float(ox)
+                        
+                        wire_length = math.sqrt((ox - ox_1)**2 + (oy - oy_1)**2)
+                        
+                        metal_r = metal_resistance[m_l]
+                        metal_w = metal_width[m_l]
+                
+                        resistance = metal_r * wire_length / metal_w
+                        
+                        count_res += 1
+                
+                        spef.write(str(count_res) + " " + net_name + ":" + str(count_res) + " " + net_name + ":" + str(count_res + 1) + " " + str(resistance) + "\n")
+                        
+                        #if j == "load":
+                            #print(resistance)
+            
+            if def_parser.metal[j][each_index]["merge"] == "M2_M1":
+                v_l = 0
+            elif def_parser.metal[j][each_index]["merge"] == "M3_M2":
+                v_l = 1
+            elif def_parser.metal[j][each_index]["merge"] == "M4_M3":
+                v_l = 2
+            elif def_parser.metal[j][each_index]["merge"] == "M5_M4":
+                v_l = 3
+            elif def_parser.metal[j][each_index]["merge"] == "M6_M5":
+                v_l = 4
+                
+            
+            if def_parser.metal[j][each_index]["merge"] != "":
+                resistance_via = via_resistance[v_l]
+                
+                count_res += 1
+                
+                spef.write(str(count_res) + " " + net_name + ":" + str(count_res) + " " + net_name + ":" + str(count_res + 1) + " " + str(resistance_via) + "\n")
+            else:
+                resistance_via = 0
+                
+            if j == "load":
+                print(resistance_via)
+                        
+                #resistance = 
+                        
+            
+        #print(metal_width)
         spef.write("\n*END\n\n")
+        
+        
+        
         
         
         
