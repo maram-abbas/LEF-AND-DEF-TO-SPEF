@@ -519,6 +519,8 @@ if __name__ == '__main__':
     spef.write("\n*PORTS\n")
     
     spef.write("\n*END\n\n")
+    
+    
     """
     for i in def_parser.nets:
         index = def_parser.nets.index(i)
@@ -543,6 +545,12 @@ if __name__ == '__main__':
     #print(pin_cap)
         
     width = 0.3 
+    metal_width = []
+        
+    for i in range(1,7):
+        metal_width.append(lef_parser.layer_dict["metal" + str(i)].width)
+        
+        
     for j in def_parser.metal:
         net_cap = []
         #total_cap = 0
@@ -616,7 +624,35 @@ if __name__ == '__main__':
                 
         spef.write("*D_NET "+net_name+ " " + str(total_cap)+"\n\n")
         
+        """
+        ------------------------------------------ CONNECTIONS PART -------------------------------------------
+        """
+        
         spef.write("*CONN\n")
+        
+        #print(def_parser.net_cell_instance)
+        
+        #print(j)
+        if j in def_parser.pin_name:
+            io = ""
+            for cell_name in enumerate(def_parser.net_cell_instance[j]["cell_name"]):
+                #print(cell_name[1])
+                comp_ind = def_parser.components_name.index(cell_name[1])
+                comp_cell = def_parser.components_cell[comp_ind]
+                
+                
+                #FROM LIB PARSER FIND IF ITS INPUT OR OUTPUT
+                lib_ind = lib_parser.cell_name.index(comp_cell[1:])
+                for cell_place_1,cell_place_2 in enumerate(lib_parser.output):
+                    if cell_place_2 == lib_ind:
+                        ins = def_parser.net_cell_instance[j]["instance"][0]
+                        #print(ins)
+                        if lib_parser.pin_name[cell_place_1] == ins:
+                            io = lib_parser.direction[cell_place_1]
+                            print(io)
+                        
+                
+            spef.write("*P " + net_name + " " + io + "\n")
         
         counter2 = 0
         for k4,k5 in enumerate(def_parser.net_cell_instance[j]["cell_name"]):
@@ -628,6 +664,11 @@ if __name__ == '__main__':
         """
         for k2, k3 in enumerate(net_cap):
             spef.write( "*N "+ net_name + ":" + str(k2+counter2+1) +" *C"+"\n")
+        """
+        
+        
+        """
+        ------------------------------------------ CAPACITANCE PART -------------------------------------------
         """
         
         spef.write("\n*CAP\n")
@@ -673,12 +714,12 @@ if __name__ == '__main__':
         spef.write("\n*RES\n")
         count_res = 0
         
-        metal_width = []
+        #metal_width = []
         #wire_length = []
         m_l = 0
         
-        for i in range(1,7):
-            metal_width.append(lef_parser.layer_dict["metal" + str(i)].width)
+        #for i in range(1,7):
+            #metal_width.append(lef_parser.layer_dict["metal" + str(i)].width)
             
          
         for each_index in def_parser.metal[j]:
