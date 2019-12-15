@@ -238,19 +238,31 @@ class DefParser:
                         if charac == "(" and j != 16:   #not first bracket
                             
                             if line[j + 2] == '*':
-                                self.metal[net][str(z)]["other_x"].append(x1)
-                                
-                                if line[j + 4] == '*':
-                                    self.metal[net][str(z)]["other_y"].append(y1[1:])
+                                if len(self.metal[net][str(z)]["other_x"]) == 0:
+                                    self.metal[net][str(z)]["other_x"].append(x1)
+                                    
+                                    if line[j + 4] == '*':
+                                        self.metal[net][str(z)]["other_y"].append(y1[1:])
+                                    else:
+                                        number = line[j + 4:line.find(" )",j + 4)]
+                                        self.metal[net][str(z)]["other_y"].append(number)
                                 else:
-                                    number = line[j + 4:line.find(" )",j + 4)]
-                                    self.metal[net][str(z)]["other_y"].append(number)
+                                    self.metal[net][str(z)]["other_x"].append(self.metal[net][str(z)]["other_x"][-1])
+                                    
+                                    if line[j + 4] == '*':
+                                        self.metal[net][str(z)]["other_y"].append(self.metal[net][str(z)]["other_y"][-1])
+                                    else:
+                                        number = line[j + 4:line.find(" )",j + 4)]
+                                        self.metal[net][str(z)]["other_y"].append(number)
                             else:
                                 number = line[j + 2:line.find(" ",j + 2)]
                                 self.metal[net][str(z)]["other_x"].append(number)
                                 
                                 if line[j + len(number) + 3] == '*':
-                                    self.metal[net][str(z)]["other_y"].append(y1[1:])
+                                    if len(self.metal[net][str(z)]["other_y"]) == 0:
+                                        self.metal[net][str(z)]["other_y"].append(y1[1:])
+                                    else:
+                                        self.metal[net][str(z)]["other_y"].append(self.metal[net][str(z)]["other_y"][-1])
                                 else:
                                     number = line[j + len(number) + 3:line.find(" )",j + len(number) + 3)]
                                     self.metal[net][str(z)]["other_y"].append(number)
