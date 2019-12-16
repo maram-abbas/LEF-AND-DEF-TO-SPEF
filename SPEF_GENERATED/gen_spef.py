@@ -113,7 +113,7 @@ class DefParser:
         stop = 0
         
         #GETTING PINS
-        file = open("cpu.def", "r")
+        file = open("spi_master.def", "r")
         for i, line in enumerate(file):
             if line.find("PINS") != -1:
                 start = i
@@ -151,7 +151,7 @@ class DefParser:
         self.components_cell = []
         comp_n = ""
         comp_c = ""
-        file = open("cpu.def", "r")
+        file = open("spi_master.def", "r")
         for i, line in enumerate(file):
             if line.find("COMPONENTS") != -1:
                 start = i
@@ -179,7 +179,7 @@ class DefParser:
         counter = 0
         #metal = {}
         #nets = []
-        file = open("cpu.def", "r")
+        file = open("spi_master.def", "r")
         for i, line in enumerate(file):
             if line.find("NETS") != -1:
                 start = i
@@ -353,7 +353,7 @@ class DefParser:
 class LibParser:
     
     def parse (self):
-        lib_file = open("osu018_stdcells.lib", "r") #opening the file
+        lib_file = open("osu035.lib", "r") #opening the file
     
         self.cell_name=[] #list of cell name
         self.pin_name=[] #list the pin names
@@ -416,7 +416,7 @@ class LibParser:
 if __name__ == '__main__':
     #LEF EXTRACTIONS
     #path = "osu018_stdcells.lef"
-    path = "osu018_stdcells.lef"
+    path = "osu035.lef"
     lef_parser = LefParser(path)
     lef_parser.parse()
     
@@ -426,7 +426,18 @@ if __name__ == '__main__':
     metal_capacitance = []
     metal_edgecapacitance = []
     
-    for i in range(1,7):
+    total_metal_number = 1  
+    while(1):
+        
+        if "metal" + str(total_metal_number) in lef_parser.layer_dict:
+            print("YES")
+            total_metal_number += 1
+        else:
+            break
+        
+    print (total_metal_number)      #becomes 7
+    
+    for i in range(1,total_metal_number):
         layer_metal.append(lef_parser.layer_dict["metal" + str(i)])
         metal_resistance.append(layer_metal[i - 1].resistance[1])
         metal_capacitance.append(layer_metal[i - 1].capacitance[1])
@@ -435,10 +446,10 @@ if __name__ == '__main__':
         
     layer_via = []
     via_resistance = []
-    layer_via.append(lef_parser.layer_dict["via"])
+    layer_via.append(lef_parser.layer_dict["via1"])
     via_resistance.append(layer_via[0].resistance)
     
-    for i in range(2,6):
+    for i in range(2,total_metal_number - 1):
         layer_via.append(lef_parser.layer_dict["via" + str(i)])
         via_resistance.append(layer_via[i - 1].resistance)
         
@@ -446,7 +457,7 @@ if __name__ == '__main__':
     start = 100000000
     end = 0
     edge_capacitance = 0
-    for i in range (1,7):
+    for i in range (1,total_metal_number):
         for c,line in enumerate(lef):
             if line.startswith("LAYER metal" + str(i)):
                 start = c
@@ -457,8 +468,14 @@ if __name__ == '__main__':
                 metal_edgecapacitance.append(edge_capacitance)
                 #print(edge_capacitance)
                 break
+            
+     #IF THERE IS NO EDGECAPACITANCE IN LEF FILE       
+    if len(metal_edgecapacitance) == 0:
+        for i in range (1,total_metal_number):
+            metal_edgecapacitance.append(0)
                 
     #print(metal_edgecapacitance)
+    """
     via = []
     
     via2_1 = lef_parser.via_dict["M2_M1"]
@@ -497,12 +514,13 @@ if __name__ == '__main__':
             via.append(v_temp)
             
     #print(v_temp)
+    """
         
     
     
     
     
-    path = "osu018_stdcells.lef"
+    path = "osu035.lef"
     lef_parser = LefParser(path)
     lef_parser.parse()  
     
@@ -514,7 +532,7 @@ if __name__ == '__main__':
     
     #print(def_parser.pin_name)
     
-    spef = open("cpu.spef", "w+")
+    spef = open("spi_master.spef", "w+")
     
     
     spef.write("*SPEF \"IEEE 1481-2009\" \n")
@@ -570,7 +588,7 @@ if __name__ == '__main__':
     width = 0.3 
     metal_width = []
         
-    for i in range(1,7):
+    for i in range(1,total_metal_number):
         metal_width.append(lef_parser.layer_dict["metal" + str(i)].width)
         
         
@@ -630,7 +648,7 @@ if __name__ == '__main__':
         #GETTING TOTAL CAPACITANCE OF CELL INSTANCE
         for k4,k5 in enumerate(def_parser.net_cell_instance[j]["cell_name"]):
             
-            
+            #print(def_parser.components_name)
             cap_ind = def_parser.components_name.index(k5)
             cell_name = def_parser.components_cell[cap_ind]
             #print(cell_name)
@@ -760,18 +778,10 @@ if __name__ == '__main__':
         for each_index in def_parser.metal[j]:
             #print(def_parser.metal[j])
             
-            if def_parser.metal[j][each_index]["metal"] == "metal1":
-                m_l = 0
-            elif def_parser.metal[j][each_index]["metal"] == "metal2":
-                m_l = 1
-            elif def_parser.metal[j][each_index]["metal"] == "metal3":
-                m_l = 2
-            elif def_parser.metal[j][each_index]["metal"] == "metal4":
-                m_l = 3
-            elif def_parser.metal[j][each_index]["metal"] == "metal5":
-                m_l = 4
-            elif def_parser.metal[j][each_index]["metal"] == "metal6":
-                m_l = 5
+            for m_i in range(1,total_metal_number):
+                if def_parser.metal[j][each_index]["metal"] == "metal" + str(m_i):
+                    m_l = m_i - 1
+                    #print("m_L",m_i,m_l)
                 
                 
             x1 = float(def_parser.metal[j][each_index]["x1"])
@@ -816,18 +826,9 @@ if __name__ == '__main__':
                         
                         #if j == "load":
                             #print(resistance)
-            
-            if def_parser.metal[j][each_index]["merge"] == "M2_M1":
-                v_l = 0
-            elif def_parser.metal[j][each_index]["merge"] == "M3_M2":
-                v_l = 1
-            elif def_parser.metal[j][each_index]["merge"] == "M4_M3":
-                v_l = 2
-            elif def_parser.metal[j][each_index]["merge"] == "M5_M4":
-                v_l = 3
-            elif def_parser.metal[j][each_index]["merge"] == "M6_M5":
-                v_l = 4
-                
+            for v_i in range(2, total_metal_number - 1):
+                if def_parser.metal[j][each_index]["merge"] == "M" + str(v_i) + "_M" + str(v_i - 1):
+                    v_l = v_i - 2
             
             if def_parser.metal[j][each_index]["merge"] != "":
                 resistance_via = via_resistance[v_l]
@@ -847,4 +848,5 @@ if __name__ == '__main__':
         #print(metal_width)
         spef.write("\n*END\n\n")
         
+    spef.close()
         
