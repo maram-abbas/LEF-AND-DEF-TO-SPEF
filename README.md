@@ -1,4 +1,5 @@
 # LEF-AND-DEF-TO-SPEF
+This project uses LEF, DEF, and LIB files in order to generate a SPEF file. This project is done for the Digital Design II course at the American University in Cairo.
 
 This SPEF extractor uses three input files:
 - LEF
@@ -18,23 +19,10 @@ The following information was parsed from these three input files:
 - LIB:
   - Capacitance of all pins
   - Direction of all pins
-  
-  
-  
- WHAT IS DONE: 
-  - capacitance calculation
-  - listing of cell names
-  - listing of nets
-  - resistance calculation
-  -passing arguments
  
-  
-  WHAT IS REMAINING:
-  -Testing the correctness of the SPEF file
  
+ For testing syntax correctness: https://github.com/The-OpenROAD-Project/Resizer
   
-  
-  
-  References: https://github.com/trimcao/lef-parser
+ References: https://github.com/trimcao/lef-parser
 
 
