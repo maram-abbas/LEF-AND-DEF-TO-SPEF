@@ -26,10 +26,11 @@ The following information was parsed from these three input files:
   - listing of cell names
   - listing of nets
   - resistance calculation
+  -
   
   WHAT IS REMAINING:
-  - resistance calculation
-  - listing of ports
+ 
+  
   
   
   References: https://github.com/trimcao/lef-parser
