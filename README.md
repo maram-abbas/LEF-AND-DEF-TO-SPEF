@@ -20,6 +20,14 @@ The following information was parsed from these three input files:
 - LIB:
   - Capacitance of all pins
   - Direction of all pins
+  
+HOW TO RUN?
+- Open terminal to the directory where all your files are found
+- Make sure you have python installed since the source code of this project is written in python
+- Write on the terminal the following:
+  python gen_spef.py [def_path] [lib_path] [lef_path] [spef_path]
+- Check spef file for output
+
  
  For testing syntax correctness: https://github.com/The-OpenROAD-Project/Resizer
   
