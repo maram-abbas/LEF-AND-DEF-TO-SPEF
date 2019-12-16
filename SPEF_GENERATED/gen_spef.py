@@ -449,8 +449,7 @@ if __name__ == '__main__':
     ------------------------------------------ LEF EXTRACTIONS -------------------------------------------
     """
     #LEF EXTRACTIONS
-    #path = "osu018_stdcells.lef"
-    #lef_path = "osu035.lef"
+    
     lef_parser = LefParser(lef_path)
     lef_parser.parse()
     
@@ -464,29 +463,45 @@ if __name__ == '__main__':
     while(1):
         
         if "metal" + str(total_metal_number) in lef_parser.layer_dict:
-            print("YES")
             total_metal_number += 1
         else:
             break
         
-    print (total_metal_number)      #becomes 7
-    
+        
     for i in range(1,total_metal_number):
         layer_metal.append(lef_parser.layer_dict["metal" + str(i)])
         metal_resistance.append(layer_metal[i - 1].resistance[1])
         metal_capacitance.append(layer_metal[i - 1].capacitance[1])
-        #metal_edgecapacitance.append(layer_metal[i - 1].edgecapacitance[1])
-        #print(lef_parser.layer_dict["metal" + str(i)])
+        
         
     layer_via = []
     via_resistance = []
-    layer_via.append(lef_parser.layer_dict["via1"])
-    via_resistance.append(layer_via[0].resistance)
+    
+    #CHECK IF via OR via1
+    
+    if "via1" in lef_parser.layer_dict:
+        layer_via.append(lef_parser.layer_dict["via1"])
+    elif "via" in lef_parser.layer_dict:
+        layer_via.append(lef_parser.layer_dict["via"])
+        
+    #CHECK IF via EXISTS
+    
+    if layer_via[0].resistance:
+        via_resistance.append(layer_via[0].resistance)
+    else:
+        via_resistance.append(str(0.0))
     
     for i in range(2,total_metal_number - 1):
         layer_via.append(lef_parser.layer_dict["via" + str(i)])
-        via_resistance.append(layer_via[i - 1].resistance)
         
+        if layer_via[i - 1].resistance:
+            via_resistance.append(layer_via[i - 1].resistance)
+        else:
+            via_resistance.append(str(0.0))
+            
+            
+    #GETTING EDGECAPACITANCE
+    
     lef = open(lef_path,"r")
     start = 100000000
     end = 0
@@ -503,54 +518,13 @@ if __name__ == '__main__':
                 #print(edge_capacitance)
                 break
             
-     #IF THERE IS NO EDGECAPACITANCE IN LEF FILE       
+    #IF THERE IS NO EDGECAPACITANCE IN LEF FILE 
+      
     if len(metal_edgecapacitance) == 0:
         for i in range (1,total_metal_number):
             metal_edgecapacitance.append(0)
-                
-    #print(metal_edgecapacitance)
-    """
-    via = []
-    
-    via2_1 = lef_parser.via_dict["M2_M1"]
-    
-    for e, each in enumerate(via2_1.layers):
-        if e == 1:
-            v_temp = each.name
-            via.append(v_temp)
-            
-    via3_2 = lef_parser.via_dict["M3_M2"]
-    
-    for e, each in enumerate(via3_2.layers):
-        if e == 1:
-            v_temp = each.name
-            via.append(v_temp)
-            
-    via4_3 = lef_parser.via_dict["M4_M3"]
-       
-    for e, each in enumerate(via4_3.layers):
-        if e == 1:
-            v_temp = each.name
-            via.append(v_temp)
-    
-    via5_4 = lef_parser.via_dict["M5_M4"]
-       
-    for e, each in enumerate(via5_4.layers):
-        if e == 1:
-            v_temp = each.name
-            via.append(v_temp)
-            
-    via6_5 = lef_parser.via_dict["M6_M5"]
-       
-    for e, each in enumerate(via6_5.layers):
-        if e == 1:
-            v_temp = each.name
-            via.append(v_temp)
-            
-    #print(v_temp)
-    """
         
-     
+    #PARSING DEF AND LIB FILES
     
     def_parser = DefParser(def_path)
     def_parser.parse()
@@ -558,7 +532,11 @@ if __name__ == '__main__':
     lib_parser = LibParser(lib_path)
     lib_parser.parse()
     
-    #print(def_parser.pin_name)
+    
+    """
+    ------------------------------------------ HEADER -------------------------------------------
+    """
+    
     
     spef = open(spef_path, "w+")
     
@@ -568,28 +546,26 @@ if __name__ == '__main__':
     spef.write("*DESIGN \n*DATE \n*VENDOR \n*PROGRAM \n*VERSION \"0.0\"\n*DESIGN_FLOW\n*DIVIDER /\n*DELIMITER :\n*BUS_DELIMITER <>\n*T_UNIT 1 PS\n*C_UNIT 1 FF\n*R_UNIT 1 KOHM\n*L_UNIT 1 UH\n")
     
     
+    """
+    ------------------------------------------ NAME MAP -------------------------------------------
+    """
+    
     spef.write("\n*NAME_MAP\n\n")
     
     counter = 0
     for i in def_parser.components_name:
         counter = counter +1
-        #print(str(counter), i)
         spef.write("*"+str(counter)+" "+i+"\n")
         
     
     for i in def_parser.nets:
         counter = counter +1
         spef.write("*"+str(counter)+" "+i+"\n")
-        #print(str(counter), i)
-        #print(i)
-        #print(def_parser.metal[i])
-    
+        
+    spef.write("\n")
     
     """
-    for i in def_parser.nets:
-        index = def_parser.nets.index(i)
-        spef.write("*D_NET *"+str(index+len(def_parser.components_name)+1)+"\n")
-        #for j in def_parser.metal[i]:
+    ------------------------------------------ CAPACITANCE PART 1 -------------------------------------------
     """
     
     total_cap = 0
@@ -600,13 +576,13 @@ if __name__ == '__main__':
     pc = ""
     
     #GETTING TOTAL CAPACITANCE FROM PIN LAYERS
+    
     for pn,val in enumerate(def_parser.pin_name):
         pl = def_parser.pin_layer[pn]
         cap_here = float(metal_capacitance[int(pl[5:]) - 1]) * length * width + float(metal_edgecapacitance[int(pl[5:]) - 1]) * length
         pc = val + " " + str(cap_here)
         pin_cap.append(pc)
         
-    #print(pin_cap)
         
     width = 0.3 
     metal_width = []
@@ -617,7 +593,6 @@ if __name__ == '__main__':
         
     for j in def_parser.metal:
         net_cap = []
-        #total_cap = 0
     
         for each_index in def_parser.metal[j]:
             metal = def_parser.metal[j][each_index]['metal']
@@ -636,45 +611,30 @@ if __name__ == '__main__':
                 cap = float(metal_cap)*wire_length*metal_width[int(metal0)-1] + float(edge_cap)*wire_length
                 total_cap = total_cap + cap
                 net_cap.append(cap)
-                if j == "RDY":
-                    print("metal: " +  metal0+" length: " + str(wire_length) + "  cap = " + str(cap))
-                    print(def_parser.metal[j][each_index]["other_x"])
-                    print(def_parser.metal[j][each_index]["other_y"])
-
             
             for en_ox, ox in enumerate(def_parser.metal[j][each_index]["other_x"]):
                 if en_ox + 1 < len(def_parser.metal[j][each_index]["other_x"]) :
-                    #print(en_ox)
-                    #print(len(def_parser.metal[j][each_index]["other_x"]))
                     oy = float(def_parser.metal[j][each_index]["other_y"][en_ox])
                     ox_1 = float(def_parser.metal[j][each_index]["other_x"][en_ox + 1])
                     oy_1 = float(def_parser.metal[j][each_index]["other_y"][en_ox + 1])
                     ox = float(ox)
                     
                     wire_length = math.sqrt((ox - ox_1)**2 + (oy - oy_1)**2)
-                    #print(j+" x1: " + str(ox) + " x2: " + str(ox_1) + " y1: " + str(oy) + " y2: " + str(oy_1))
                     cap = float(metal_cap)*wire_length*metal_width[int(metal0)-1] + float(edge_cap)*wire_length
-                
-                    #print("cap: ", cap)
-                    if j == "RDY":
-                        print(" x1: " + str(ox) + " x2: " + str(ox_1) + " y1: " + str(oy) + " y2: " + str(oy_1))
-                        print("metal: " +  metal0+" length: " + str(wire_length) + "  cap = " + str(cap))
+            
                     total_cap = total_cap + cap
                     net_cap.append(cap)
        
         index = def_parser.nets.index(j)
         net_name = "*"+str(index+len(def_parser.components_name)+1)
-        #print(j)
-        #print(def_parser.nets[int(j)])
-        #print(def_parser.components_name)
+        
         
         #GETTING TOTAL CAPACITANCE OF CELL INSTANCE
+        
         for k4,k5 in enumerate(def_parser.net_cell_instance[j]["cell_name"]):
             
-            #print(def_parser.components_name)
             cap_ind = def_parser.components_name.index(k5)
             cell_name = def_parser.components_cell[cap_ind]
-            #print(cell_name)
             
             cell_index = lib_parser.cell_name.index(cell_name[1:])
             occurance_number = lib_parser.output.count(cell_index)
@@ -692,13 +652,14 @@ if __name__ == '__main__':
                 
         
         #PIN CAPACITANCE
+        
         for pin_c in pin_cap:
             space = pin_c.find(" ")
             if pin_c[:space] == j:
-                #print(pin_c[space + 1:])
                 total_cap += float(pin_c[space + 1:])
                 
         spef.write("*D_NET "+net_name+ " " + str(total_cap)+"\n\n")
+        
         
         """
         ------------------------------------------ CONNECTIONS PART -------------------------------------------
@@ -706,9 +667,6 @@ if __name__ == '__main__':
         
         spef.write("*CONN\n")
         
-        #print(def_parser.net_cell_instance)
-        
-        #print(j)
         if j in def_parser.pin_name:
             io = ""
             for cell_name in enumerate(def_parser.net_cell_instance[j]["cell_name"]):
@@ -737,14 +695,9 @@ if __name__ == '__main__':
             spef.write("*I "+ cell_name + " I"+"\n")
             counter2= k4+1
         
-        """
-        for k2, k3 in enumerate(net_cap):
-            spef.write( "*N "+ net_name + ":" + str(k2+counter2+1) +" *C"+"\n")
-        """
-        
         
         """
-        ------------------------------------------ CAPACITANCE PART -------------------------------------------
+        ------------------------------------------ CAPACITANCE PART 2 -------------------------------------------
         """
         
         spef.write("\n*CAP\n")
@@ -756,7 +709,7 @@ if __name__ == '__main__':
             
             cap_ind = def_parser.components_name.index(k5)
             cell_name = def_parser.components_cell[cap_ind]
-            #print(cell_name)
+            
             
             cell_index = lib_parser.cell_name.index(cell_name[1:])
             occurance_number = lib_parser.output.count(cell_index)
@@ -788,23 +741,17 @@ if __name__ == '__main__':
         """
         
         spef.write("\n*RES\n")
+        
         count_res = 0
         
-        #metal_width = []
-        #wire_length = []
         m_l = 0
-        
-        #for i in range(1,7):
-            #metal_width.append(lef_parser.layer_dict["metal" + str(i)].width)
             
          
         for each_index in def_parser.metal[j]:
-            #print(def_parser.metal[j])
             
             for m_i in range(1,total_metal_number):
                 if def_parser.metal[j][each_index]["metal"] == "metal" + str(m_i):
                     m_l = m_i - 1
-                    #print("m_L",m_i,m_l)
                 
                 
             x1 = float(def_parser.metal[j][each_index]["x1"])
@@ -823,14 +770,10 @@ if __name__ == '__main__':
                 count_res += 1
                 
                 spef.write(str(count_res) + " " + net_name + ":" + str(count_res) + " " + net_name + ":" + str(count_res + 1) + " " + str(resistance) + "\n")
-                #print(wire_length)
-                #if j == "load":
-                    #print(resistance)
+    
                 
                 for en_ox, ox in enumerate(def_parser.metal[j][each_index]["other_x"]):
                     if en_ox + 1 < len(def_parser.metal[j][each_index]["other_x"]) :
-                        #print(en_ox)
-                        #print(len(def_parser.metal[j][each_index]["other_x"]))
                         oy = float(def_parser.metal[j][each_index]["other_y"][en_ox])
                         ox_1 = float(def_parser.metal[j][each_index]["other_x"][en_ox + 1])
                         oy_1 = float(def_parser.metal[j][each_index]["other_y"][en_ox + 1])
@@ -847,15 +790,13 @@ if __name__ == '__main__':
                 
                         spef.write(str(count_res) + " " + net_name + ":" + str(count_res) + " " + net_name + ":" + str(count_res + 1) + " " + str(resistance) + "\n")
                         
-                        #if j == "load":
-                            #print(resistance)
+                
             for v_i in range(2, total_metal_number - 1):
                 if def_parser.metal[j][each_index]["merge"] == "M" + str(v_i) + "_M" + str(v_i - 1):
                     v_l = v_i - 2
             
             if def_parser.metal[j][each_index]["merge"] != "":
-                if len(via_resistance) !=0:
-                    print (via_resistance)
+             
                 resistance_via = via_resistance[v_l]
                 
                 count_res += 1
@@ -864,13 +805,7 @@ if __name__ == '__main__':
             else:
                 resistance_via = 0
                 
-            #if j == "load":
-                #print(resistance_via)
-                        
-                #resistance = 
-                        
-            
-        #print(metal_width)
+                
         spef.write("\n*END\n\n")
         
     spef.close()
