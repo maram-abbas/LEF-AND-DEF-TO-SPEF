@@ -25,6 +25,7 @@ The following information was parsed from these three input files:
   - capacitance calculation
   - listing of cell names
   - listing of nets
+  resistance calculation
   
   WHAT IS REMAINING:
   - resistance calculation
