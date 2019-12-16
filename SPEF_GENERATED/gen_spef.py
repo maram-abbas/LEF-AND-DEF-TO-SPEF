@@ -8,6 +8,7 @@ Created on Wed Dec  4 14:13:22 2019
 #class for lef parser
 from lef_util import *
 from util import *
+import sys
 
 SCALE = 2000
 
@@ -93,7 +94,7 @@ class LefParser:
         
 
 class DefParser:
-    def __init__(self):
+    def __init__(self,def_file):
         #self.def_path = def_file
         # dictionaries to map the definitions
         self.pin_name = []
@@ -101,6 +102,7 @@ class DefParser:
         self.metal = {}
         self.nets = []
         self.net_cell_instance = {}
+        self.def_path = def_file
 
 #pin_name = []
         
@@ -113,7 +115,7 @@ class DefParser:
         stop = 0
         
         #GETTING PINS
-        file = open("spi_master.def", "r")
+        file = open(self.def_path, "r")
         for i, line in enumerate(file):
             if line.find("PINS") != -1:
                 start = i
@@ -151,7 +153,7 @@ class DefParser:
         self.components_cell = []
         comp_n = ""
         comp_c = ""
-        file = open("spi_master.def", "r")
+        file = open(self.def_path, "r")
         for i, line in enumerate(file):
             if line.find("COMPONENTS") != -1:
                 start = i
@@ -179,7 +181,7 @@ class DefParser:
         counter = 0
         #metal = {}
         #nets = []
-        file = open("spi_master.def", "r")
+        file = open(self.def_path, "r")
         for i, line in enumerate(file):
             if line.find("NETS") != -1:
                 start = i
@@ -352,8 +354,11 @@ class DefParser:
 
 class LibParser:
     
+    def __init__(self,lib_file):
+        self.lib_path = lib_file
+    
     def parse (self):
-        lib_file = open("osu035.lib", "r") #opening the file
+        file = open(self.lib_path, "r") #opening the file
     
         self.cell_name=[] #list of cell name
         self.pin_name=[] #list the pin names
@@ -368,7 +373,7 @@ class LibParser:
         cap_flag=0#flag for capacitance
         total_cap=0
         
-        for i, line in enumerate(lib_file): #passing at everyline of file
+        for i, line in enumerate(file): #passing at everyline of file
             if line:
                 if line.find('Design') != -1 :   #if found design
                     first_finder=line.find(':')    # finding :
@@ -414,10 +419,39 @@ class LibParser:
                     self.capacitance.append(cap) #taking the capacitance
 
 if __name__ == '__main__':
+    
+    """
+    ------------------------------------------ INPUTS AS ARGUMENTS -------------------------------------------
+    """
+    if len(sys.argv) <5 and len(sys.argv)>=1:
+        if(len(sys.argv) ==1):
+            print('usage is python def2spef [deffile] [libraryfile] [leffile] [speffile]\ndef2spef -help for additional options')
+            exit(1)
+        elif(sys.argv[1]=='-help'):
+            print('usage is python def2spef [deffile] [libraryfile] [leffile] [speffile]')
+            exit(0)
+        else:
+            print('usage is python def2spef [deffile] [libraryfile] [leffile] [speffile]\ndef2spef -help for additional options')
+            exit(1)
+    
+    def_path = sys.argv[1]
+    lib_path = sys.argv[2]
+    lef_path = sys.argv[3]
+    spef_path = sys.argv[4]
+    
+    """
+    def_path = "spi_master.def"
+    lib_path = "osu035.lib"
+    lef_path = "osu035.lef"
+    spef_path = "spi_master.spef"
+    
+    
+    ------------------------------------------ LEF EXTRACTIONS -------------------------------------------
+    """
     #LEF EXTRACTIONS
     #path = "osu018_stdcells.lef"
-    path = "osu035.lef"
-    lef_parser = LefParser(path)
+    #lef_path = "osu035.lef"
+    lef_parser = LefParser(lef_path)
     lef_parser.parse()
     
     #GETTING RESISTANCE OF METALS AND VIA LAYERS    
@@ -453,7 +487,7 @@ if __name__ == '__main__':
         layer_via.append(lef_parser.layer_dict["via" + str(i)])
         via_resistance.append(layer_via[i - 1].resistance)
         
-    lef = open(path,"r")
+    lef = open(lef_path,"r")
     start = 100000000
     end = 0
     edge_capacitance = 0
@@ -516,23 +550,17 @@ if __name__ == '__main__':
     #print(v_temp)
     """
         
+     
     
-    
-    
-    
-    path = "osu035.lef"
-    lef_parser = LefParser(path)
-    lef_parser.parse()  
-    
-    def_parser = DefParser()
+    def_parser = DefParser(def_path)
     def_parser.parse()
     
-    lib_parser = LibParser()
+    lib_parser = LibParser(lib_path)
     lib_parser.parse()
     
     #print(def_parser.pin_name)
     
-    spef = open("spi_master.spef", "w+")
+    spef = open(spef_path, "w+")
     
     
     spef.write("*SPEF \"IEEE 1481-2009\" \n")
@@ -555,11 +583,6 @@ if __name__ == '__main__':
         #print(str(counter), i)
         #print(i)
         #print(def_parser.metal[i])
-        
-        
-    spef.write("\n*PORTS\n")
-    
-    spef.write("\n*END\n\n")
     
     
     """
@@ -711,7 +734,7 @@ if __name__ == '__main__':
         for k4,k5 in enumerate(def_parser.net_cell_instance[j]["cell_name"]):
             index2 = def_parser.components_name.index(k5)
             cell_name = "*"+str(index2+1) + ":" + def_parser.net_cell_instance[j]["instance"][k4]
-            spef.write("*I "+ cell_name + "\n")
+            spef.write("*I "+ cell_name + " I"+"\n")
             counter2= k4+1
         
         """
@@ -831,6 +854,8 @@ if __name__ == '__main__':
                     v_l = v_i - 2
             
             if def_parser.metal[j][each_index]["merge"] != "":
+                if len(via_resistance) !=0:
+                    print (via_resistance)
                 resistance_via = via_resistance[v_l]
                 
                 count_res += 1
