@@ -364,6 +364,7 @@ class LibParser:
         self.capacitance=[]
         cap_flag=0#flag for capacitance
         total_cap=0
+        self.all_pins = {}
         
         for i, line in enumerate(file): #passing at everyline of file
             if line:
@@ -373,6 +374,11 @@ class LibParser:
                     self.cell_name.append(line[first_finder+2:last_finder-1])  #taking the cell name
                     counter+=1
                     counter2=-1
+                    
+                    cell = line[first_finder+2:last_finder-1]
+                    self.all_pins[cell] = {}
+                    self.all_pins[cell]["pin"] = []
+                    self.all_pins[cell]["IO"] = []
                     
                     
                 if line.find('_pin') !=-1 :  #if found related_pin or contsrained_pin
@@ -389,6 +395,7 @@ class LibParser:
                     self.output.append(counter)
                     counter2+=1
                     counter_2.append(counter2)
+                    self.all_pins[cell]["pin"].append(my_pin_name)
                     
                         
                 if line.find('direction')  !=-1:
@@ -400,6 +407,7 @@ class LibParser:
                     else:# output
                         updated_direction='O' #conerting it to O
                     self.direction.append(updated_direction) #taking direction
+                    self.all_pins[cell]["IO"].append(updated_direction)
                 if line.find('_capacitance')  !=-1:  #if found _capacitance this is not the one i want
                     cap_flag=1 #flag to take capacitance only and ignore rise_capacitance and fall_cap..
                 else:
@@ -414,7 +422,7 @@ if __name__ == '__main__':
     
     """
     ------------------------------------------ INPUTS AS ARGUMENTS -------------------------------------------
-    """
+    
     if len(sys.argv) <5 and len(sys.argv)>=1:
         if(len(sys.argv) ==1):
             print('usage is python def2spef [deffile] [libraryfile] [leffile] [speffile]\ndef2spef -help for additional options')
@@ -437,7 +445,7 @@ if __name__ == '__main__':
     lef_path = "osu035.lef"
     spef_path = "spi_master.spef"
     
-    
+    """
     ------------------------------------------ LEF EXTRACTIONS -------------------------------------------
     """
     #LEF EXTRACTIONS
@@ -533,9 +541,10 @@ if __name__ == '__main__':
     spef = open(spef_path, "w+")
     
     
-    spef.write("*SPEF \"IEEE 1481-2009\" \n")
+    spef.write("*SPEF \"IEEE 1481-1998\" \n")
+    #def_path
     
-    spef.write("*DESIGN \n*DATE \n*VENDOR \n*PROGRAM \n*VERSION \"0.0\"\n*DESIGN_FLOW\n*DIVIDER /\n*DELIMITER :\n*BUS_DELIMITER <>\n*T_UNIT 1 PS\n*C_UNIT 1 FF\n*R_UNIT 1 KOHM\n*L_UNIT 1 UH\n")
+    spef.write("*DESIGN " + def_path[0:len(def_path)-4]+"\n*DATE \n*VENDOR \"ISPD 2013 Contest\"\n*PROGRAM \"Benchmark Parasitic Generator\"\n*VERSION \"0.0\"\n*DESIGN_FLOW" + " \"NETLIST_TYPE_VERILOG\"" +"\n*DIVIDER /\n*DELIMITER :\n*BUS_DELIMITER []\n*T_UNIT 1 PS\n*C_UNIT 1 FF\n*R_UNIT 1 KOHM\n*L_UNIT 1 UH\n")
     
     
     """
@@ -682,9 +691,14 @@ if __name__ == '__main__':
         
         counter2 = 0
         for k4,k5 in enumerate(def_parser.net_cell_instance[j]["cell_name"]):
+            cap_ind = def_parser.components_name.index(k5)
+            cell_name = def_parser.components_cell[cap_ind]
+            index_1 = lib_parser.all_pins[cell_name[1:]]["pin"].index(def_parser.net_cell_instance[j]["instance"][k4])
+            IO = lib_parser.all_pins[cell_name[1:]]["IO"][int(index_1)]
+
             index2 = def_parser.components_name.index(k5)
             cell_name = "*"+str(index2+1) + ":" + def_parser.net_cell_instance[j]["instance"][k4]
-            spef.write("*I "+ cell_name + " I"+"\n")
+            spef.write("*I "+ cell_name + " " + IO +"\n")
             counter2= k4+1
         
         
@@ -801,4 +815,3 @@ if __name__ == '__main__':
         spef.write("\n*END\n\n")
         
     spef.close()
-        
