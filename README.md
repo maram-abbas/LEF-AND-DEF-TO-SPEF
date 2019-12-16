@@ -21,7 +21,6 @@ The following information was parsed from these three input files:
   - Capacitance of all pins
   - Direction of all pins
  
- 
  For testing syntax correctness: https://github.com/The-OpenROAD-Project/Resizer
   
  References: https://github.com/trimcao/lef-parser
