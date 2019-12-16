@@ -26,7 +26,7 @@ The following information was parsed from these three input files:
   - listing of cell names
   - listing of nets
   - resistance calculation
-  -
+ 
   
   WHAT IS REMAINING:
   -Testing the correctness of the SPEF file
