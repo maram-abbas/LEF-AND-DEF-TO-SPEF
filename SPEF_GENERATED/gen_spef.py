@@ -104,7 +104,6 @@ class DefParser:
         self.net_cell_instance = {}
         self.def_path = def_file
 
-#pin_name = []
         
     def parse(self):
         self.pin_layer = []
@@ -144,12 +143,10 @@ class DefParser:
                 pin_placement_y.append(placed_y)
                 
         file.close()
-        #print(self.pin_name)
         
         #GETTING COMPONENTS  
         z = 0  
         start = 100000000
-        #components_name = []
         self.components_cell = []
         comp_n = ""
         comp_c = ""
@@ -172,15 +169,14 @@ class DefParser:
         
         #GETTING NETS
         start = 100000000
-        #net_cell_instance = {}
+        
         net = ""
         cell_name = ""
         instance = ""
         start_again = 0
         nothing = 0
         counter = 0
-        #metal = {}
-        #nets = []
+        
         file = open(self.def_path, "r")
         for i, line in enumerate(file):
             if line.find("NETS") != -1:
@@ -198,8 +194,6 @@ class DefParser:
                 self.net_cell_instance[net]["cell_name"] = []
                 self.net_cell_instance[net]["instance"] = []
                 self.metal[net] = {}
-                #net_cell_instance["pin" + str(counter)]["pin"] = net
-                #print(net_cell_instance)
                
             if start_again == 1:
                 
@@ -217,14 +211,14 @@ class DefParser:
                 elif line.startswith("+ ROUTED"):
                     z += 1
                     routed = "+ ROUTED "
-                    #metal_name = line[len(routed):line.find(" (")] + "_" + str(z)
+                    
                     metal_name = line[len(routed):line.find(" (")] 
                     
                     index = line.find(" ( ") + 3
                     x1 = line[index:line.find(" ",index)]
                     
                     y1 = line[line.find(x1) + len(x1):line.find(" )")]
-                    #print(y1)
+                    
                     
                     self.metal[net][str(z)] = {}
                     self.metal[net][str(z)]["metal"] = metal_name
@@ -270,7 +264,7 @@ class DefParser:
                                     self.metal[net][str(z)]["other_y"].append(number)
                                     
                         if charac == "M":
-                            #print(line[j:-2])
+                            
                             if line.find(";") != -1:
                                 self.metal[net][str(z)]["merge"] = line[j:-3]
                             else:
@@ -288,7 +282,7 @@ class DefParser:
                     x1 = line[index:line.find(" ",index)]
                     
                     y1 = line[line.find(x1) + len(x1) + 1:line.find(" )")]
-                    #print(x1)
+                    
                     
                     self.metal[net][str(z)] = {}
                     self.metal[net][str(z)]["metal"] = metal_name
@@ -334,7 +328,7 @@ class DefParser:
                                     self.metal[net][str(z)]["other_y"].append(number)
                                     
                         if charac == "M":
-                            #print(line[j:-2])
+                            
                             if line.find(";") != -1:
                                 self.metal[net][str(z)]["merge"] = line[j:-3]
                             else:
@@ -346,8 +340,6 @@ class DefParser:
                 start_again = 0
                 z = 0
               
-            #print(net_cell_instance)
-                    
                               
         file.close()
 
